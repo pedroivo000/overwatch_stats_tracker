@@ -1,0 +1,41 @@
+---
+title: "Overwatch stats tracker code test"
+output: html_notebook
+---
+
+```{r libraries}
+library(tidyverse)
+library(jsonlite)
+library(googlesheets)
+```
+
+#Import JSON file with player stats:
+
+The first thing that needs to be done is to use the OW API written by SunDwarf (https://github.com/SunDwarf/OWAPI/blob/master/api.md) to request a player (in this test, me) game stats and store the data in a dataframe inside R. The API returns the stats in a JSON file that needs to be parsed and reshaped into a tidy table. 
+
+```{r fetch-player-stats}
+#We need a function that uses the API request a player profile/stats data and records the time when request was made:
+
+base_url <- 'https://owapi.net/api/v3/u/'
+request_type <- '/blob'
+platform_override <- '?platform=xbl'
+request_player_data <- function(player) {
+  #assemble URL:
+  fetch_url <- paste0(base_url, player, request_type, platform_override)
+  
+  #binding to df:
+  player_data <- tibble('player' = player)
+  
+  #Requesting player data:
+  player_data <- player_data %>%
+    mutate(
+      timestamp = Sys.time(),
+      api_response = fromJSON(fetch_url)
+    )
+  
+  return(player_data)
+}
+
+player_data <- request_player_data('pIvoG')
+```
+
